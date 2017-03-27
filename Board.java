@@ -4,14 +4,32 @@ import java.util.*;
 
 public class Board {
   int[][] board;
+  int height;
+  int width;
+  int numMines;
 
-  public Board(int height, int width, int numMines) {
-    this.board = new int[height][width];
-    board = fillBoard(board,numMines);
+  public Board(int h, int w, int nM) {
+    height = h;
+    width = w;
+    numMines = nM;
+    board = new int[height][width];
+    board = fillBoardBruteForce(board,numMines);
   }
 
-  private int[][] getBoard() {
+  public int[][] getBoard() {
     return board;
+  }
+
+  public int getHeight() {
+    return height;
+  }
+
+  public int getWidth() {
+    return width;
+  }
+
+  public int getNumMines() {
+    return numMines;
   }
 
   /**
@@ -20,9 +38,9 @@ public class Board {
    * @param  int[][] 2d array with predetermined height and width
    * @return int[][] Minesweeper board with everything filled in
    */
-  private int[][] fillBoard(int[][] board, int numMines) {
+  private int[][] fillBoardBruteForce(int[][] board, int numMines) {
     board = addMines(board,numMines);
-    board = addNumbers(board);
+    board = addNumbersBruteForce(board);
     return board;
   }
 
@@ -58,7 +76,8 @@ public class Board {
    * @param  int[][] board passed in board with mines already randomly dispersed
    * @return int[][] board with corresponding numbers filled in
    */
-  private int[][] addNumbers(int[][] board) {
+   // should be O(n^2)
+  private int[][] addNumbersBruteForce(int[][] board) {
     int[][] boardWithNumbers = new int[board.length][board[0].length];
     //brute force solution
     for(int i = 0; i < board.length; i++) {
@@ -69,6 +88,23 @@ public class Board {
     return boardWithNumbers;
   }
 
+  // something dynamic like fibonacci example??
+  // look for bombs first, duh!
+  // this should be O(nlogn)
+  // in progress
+  private int[][] addNumbersDivideConquer(int[][] board) {
+    int[][] boardWithNumbers = new int[board.length][board[0].length];
+    for(int i = 0; i < board.length; i++) {
+      for(int j = 0; j < board[i].length; i++) {
+
+      }
+    }
+    return null;
+  }
+
+  // in progress
+  private void heightRecurse(int[][] board) {
+  }
 
   // checks adjacent tiles for mines, returns number surrounding specific tile
   private int checkMine(int r, int c, int[][] board) {
@@ -97,6 +133,7 @@ public class Board {
     return count;
   }
 
+  // prints out a minesweeper board
   public static void printBoard(int[][] board) {
     for(int i = 0; i < board.length; i++) {
       for(int j = 0; j < board[i].length; j++) {
