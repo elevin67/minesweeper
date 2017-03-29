@@ -2,13 +2,13 @@ package minesweeper;
 
 import java.util.*;
 
-public class Minesweeper {
+public class Solver {
   Board board;
   int[][] gameBoard;
   int[][] cover;
   int[][] solvedBoard;
 
-  public Minesweeper() {
+  public Solver() {
     board = new Board(16,16,40);
     gameBoard = board.getBoard();
     cover = fillCover(new int[gameBoard.length][gameBoard[0].length]);
@@ -96,7 +96,7 @@ public class Minesweeper {
   }
 
   public static void main(String[] args) {
-    Board board = new Board(10,10,10);
+    Board board = new Board(16,16,40);
     int[][] b = board.getBoard();
     Board.printBoard(b);
     int[][] cover = fillCover(b);
