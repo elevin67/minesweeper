@@ -134,7 +134,7 @@ public class Board {
   }
 
   // prints out a minesweeper board
-  public static void printBoard(int[][] board) {
+  public void printBoard(int[][] board) {
     for(int i = 0; i < board.length; i++) {
       for(int j = 0; j < board[i].length; j++) {
         if(board[i][j] < 0) {
@@ -146,10 +146,5 @@ public class Board {
       System.out.println("");
     }
     System.out.println("");
-  }
-
-  public static void main(String[] args) {
-    Board boardGenerator = new Board(5,5,5);
-    printBoard(boardGenerator.getBoard());
   }
 }

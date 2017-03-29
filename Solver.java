@@ -12,7 +12,19 @@ public class Solver {
     board = new Board(16,16,40);
     gameBoard = board.getBoard();
     cover = fillCover(new int[gameBoard.length][gameBoard[0].length]);
-    solvedBoard = solveBoard(gameBoard,cover);
+    //solvedBoard = solveBoard(gameBoard,cover);
+  }
+
+  public int[][] getGameBoard() {
+    return gameBoard;
+  }
+
+  public int[][] getCover() {
+    return cover;
+  }
+
+  public int[][] getSolvedBoard() {
+    return solvedBoard;
   }
 
   // puts flags (-2) on all the mines
@@ -35,7 +47,7 @@ public class Solver {
   }
 
   // picks a random spot on the board to start, calls uncoverBoard to uncover location
-  public static int[][] pickRandom(int[][] board, int[][] cover) {
+  public int[][] pickRandom(int[][] board, int[][] cover) {
     int randX = (int)(Math.random()*board.length);
     int randY = (int)(Math.random()*board[0].length);
     int randSpot = board[randX][randY];
@@ -52,7 +64,7 @@ public class Solver {
 
   // uncovers the board at the random spot (r,c)
   // works, but very inefficient
-  public static int[][] uncoverBoard(int r,int c, int[][] board, int[][] cover) {
+  private int[][] uncoverBoard(int r,int c, int[][] board, int[][] cover) {
     int x = r - 1;
     int y = c - 1;
     int[][] uncoveredBoard = cover;
@@ -81,7 +93,7 @@ public class Solver {
   }
 
   // fills the cover board with -3
-  public static int[][] fillCover(int[][] board) {
+  public int[][] fillCover(int[][] board) {
     int height = board.length;
     int width = board[0].length;
     int[][] cover = new int[height][width];
@@ -93,18 +105,5 @@ public class Solver {
     }
 
     return cover;
-  }
-
-  public static void main(String[] args) {
-    Board board = new Board(16,16,40);
-    int[][] b = board.getBoard();
-    Board.printBoard(b);
-    int[][] cover = fillCover(b);
-    int[][] randomBoard = pickRandom(b,cover);
-    if(randomBoard==null) {
-      System.out.println("You lose!");
-    } else {
-      Board.printBoard(randomBoard);
-    }
   }
 }
