@@ -1,6 +1,7 @@
 package minesweeper;
 
 import java.util.*;
+import java.util.ArrayList;
 
 public class Solver {
   Board board;
@@ -38,12 +39,59 @@ public class Solver {
   private int[][] iterateBoard(int[][] board, int[][] cover) {
     for(int i = 0; i < board.length; i++) {
       for(int j = 0; j < board[i].length; j++) {
-        if(cover[i][j]==-3) {
-          continue;
+        if(cover[i][j]>0) {
+          cover = iterateTile(i,j,board,cover);
         }
       }
     }
-    return null;
+    return cover;
+  }
+
+  // just for one tile. Will need a function that runs over all tiles until no obvious moves are left available
+  // works!
+  public int[][] iterateTile(int r, int c, int[][] board, int[][] cover) {
+    int x = r - 1;
+    int y = c - 1;
+    int value = board[r][c];
+    int unknown = 0;
+    int flagged = 0;
+    ArrayList<Point> points = new ArrayList<Point>();
+    for(int i=0; i<3; i++) {
+      for(int j=0; j<3; j++) {
+        if(i == 1 && j == 1) {
+          continue;
+        }
+        if(x+i < 0 || x+i > board.length - 1) {
+          continue;
+        } else if (y+j < 0 || y+j > board[i].length - 1) {
+          continue;
+        } else if (cover[x+i][y+j]==-3) {
+          points.add(new Point(x+i,y+j,-3));
+          unknown++;
+        } else if (cover[x+i][y+j]==-2) {
+          points.add(new Point(x+i,y+j,-2));
+          flagged++;
+        }
+      }
+    }
+    System.out.println("Flagged: "+flagged);
+    System.out.println("Unknown: "+unknown);
+    if(flagged==value || unknown==value&&flagged==0 || flagged+unknown==value) {
+      System.out.println("Hit!");
+      for(int i = 0; i < points.size(); i++) {
+        Point point = points.get(i);
+        System.out.println("X:"+point.getX());
+        System.out.println("Y:"+point.getY());
+        System.out.println("Value:"+point.getValue());
+        if(point.getValue()==-3) {
+          System.out.println(board[point.getX()][point.getY()]);
+          cover[point.getX()][point.getY()] = board[point.getX()][point.getY()];
+        }
+      }
+    } else {
+      System.out.println("nope");
+    }
+    return cover;
   }
 
   // picks a random spot on the board to start, calls uncoverBoard to uncover location
