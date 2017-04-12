@@ -39,7 +39,8 @@ public class Board {
    * @return int[][] Minesweeper board with everything filled in
    */
   private int[][] fillBoardBruteForce(int[][] board, int numMines) {
-    board = addMines(board,numMines);
+    board = addMinesRandom(board,numMines);
+    board = addMinesOptRandom(board,numMines);
     board = addNumbersBruteForce(board);
     return board;
   }
@@ -52,11 +53,11 @@ public class Board {
    * @param  int numMines  number of mines to randomly distribute on board
    * @return int[][] returns an array with distributed mines
    */
-  private int[][] addMines(int[][] board, int numMines) {
+  private int[][] addMinesRandom(int[][] board, int numMines) {
     int width = board[0].length;
     int height = board.length;
     int[][] boardWithMines = new int[width][height];
-    for(int i = 0; i < numMines; i++) {
+    for(int i = 0; i < numMines/2; i++) {
       int x = (int)((Math.random()*width));
       int y = (int)((Math.random()*height));
       if(boardWithMines[x][y]==-1) {
@@ -68,7 +69,29 @@ public class Board {
     }
     return boardWithMines;
   }
+  /**
+   * randomly places a passed in number of mines, but makes sure that there are no neighboring mines.
+   * This eliminates the cases where the game gets too impossible or too easy.
+   * mines are represented by -1, into a 2d array
+   *
+   * @param  int[][] board 2d array that represents the board with predetermined height and width
+   * @param  int numMines  number of mines
+   * @return int[][] returns an array with distributed mines
+   */
+  private int[][] addMinesOptRandom(int[][] board, int numMines) {
 
+    for(int i = 0; i < numMines/2; i++) {
+      int x = (int)((Math.random()*width));
+      int y = (int)((Math.random()*height));
+      if((board[x][y]==-1)||(checkMine(x,y,board)>0)) {
+        i--;
+        continue;
+      } else {
+        board[x][y] = -1;
+      }
+    }
+    return board;
+  }
 
   /**
    * fills a board that already has randomly dispersed mines with their corresponding numbers
