@@ -10,7 +10,7 @@ public class Solver {
   int[][] solvedBoard;
 
   public Solver() {
-    board = new Board(16,16,40);
+    board = new Board(30,16,40);
     gameBoard = board.getBoard();
     cover = fillCover(new int[gameBoard.length][gameBoard[0].length]);
     //solvedBoard = solveBoard(gameBoard,cover);
@@ -98,6 +98,26 @@ public class Solver {
   public int[][] pickRandom(int[][] board, int[][] cover) {
     int randX = (int)(Math.random()*board.length);
     int randY = (int)(Math.random()*board[0].length);
+    for(int i = randX; i<board.length; i++){
+      for(int j = randY; j<board[0].length; j++){
+        if(board[i][j]==0){
+          cover=uncoverBoard(i,j,board,cover);
+          return cover;
+        }
+      }
+    }
+    for(int i = randX; i>=0; i--){
+      for(int j = randY; j>=0; j--){
+        if(board[i][j]==0){
+          cover=uncoverBoard(i,j,board,cover);
+          return cover;
+        }
+      }
+    }
+    return cover;
+    /**
+    int randX = (int)(Math.random()*board.length);
+    int randY = (int)(Math.random()*board[0].length);
     int randSpot = board[randX][randY];
     System.out.println(randX + " " + randY);
     if(randSpot==0) {
@@ -107,7 +127,7 @@ public class Solver {
     } else {
       cover[randX][randY] = randSpot;
     }
-    return cover;
+    return cover;**/
   }
 
   // uncovers the board at the random spot (r,c)

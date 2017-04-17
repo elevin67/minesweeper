@@ -4,7 +4,7 @@ import java.util.*;
 
 public class TestSolver {
   public static void main(String[] args) {
-    Board board = new Board(16,16,40);
+    Board board = new Board(30,16,40);
     int[][] i = {{-3,-3,-3},{-2,1,-3},{-3,-3,-3}};
     int[][] j = {{0,0,0},{-1,1,0},{0,0,0}};
     int[][] b = board.getBoard();
