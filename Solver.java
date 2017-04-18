@@ -4,16 +4,18 @@ import java.util.*;
 import java.util.ArrayList;
 
 public class Solver {
-  Board board;
+  Board board1;
   int[][] gameBoard;
   int[][] cover;
-  int[][] solvedBoard;
+  boolean changes = false;
+  boolean iterationChange = false;
+  // boolean finished = false;
 
-  public Solver() {
-    board = new Board(30,16,40);
-    gameBoard = board.getBoard();
+  public Solver(Board b) {
+    board1 = b;
+    gameBoard = board1.getBoard();
     cover = fillCover(new int[gameBoard.length][gameBoard[0].length]);
-    //solvedBoard = solveBoard(gameBoard,cover);
+
   }
 
   public int[][] getGameBoard() {
@@ -24,26 +26,74 @@ public class Solver {
     return cover;
   }
 
-  public int[][] getSolvedBoard() {
-    return solvedBoard;
-  }
-
   // puts flags (-2) on all the mines
-  private int[][] solveBoard(int[][] board, int[][] cover) {
+  public boolean solveBoard(int[][] board, int[][] cover) {
+    board1.printBoard(board);
     cover = pickRandom(board,cover);
+    if(cover==null) {
+      return false;
+    }
+    board1.printBoard(cover);
     cover = iterateBoard(board,cover);
-    return null;
+    while(cover!=null) {
+      if(!changes) {
+        int randX = (int)(Math.random()*board.length);
+        int randY = (int)(Math.random()*board[0].length);
+        cover = iterateRandomTile(randX,randY,board,cover);
+      } else {
+        cover = iterateBoard(board,cover);
+      }
+      if(cover==null) {
+        continue;
+      }
+
+      if(checkFinish(cover)==true) {
+        return true;
+      }
+    }
+    return false;
   }
 
-  // iterates over the board, picking out mines
-  private int[][] iterateBoard(int[][] board, int[][] cover) {
+  private int[][] iterateRandomBoard(int[][] board, int[][] cover) {
     for(int i = 0; i < board.length; i++) {
       for(int j = 0; j < board[i].length; j++) {
+        // if(finished) {
+        //   break;
+        // }
         if(cover[i][j]>0) {
-          cover = iterateTile(i,j,board,cover);
+          cover = iterateRandomTile(i,j,board,cover);
+        }
+        // else if(cover[i][j]==-2) {
+        //   finished = checkFinish(board,cover);
+        // }
+        else if(cover[i][j]==-1) {
+          return null;
         }
       }
     }
+    return cover;
+  }
+
+  // iterates over the board, picking out mines
+  // works!
+  private int[][] iterateBoard(int[][] board, int[][] cover) {
+    iterationChange = false;
+    for(int i = 0; i < board.length; i++) {
+      for(int j = 0; j < board[i].length; j++) {
+        if(cover[i][j]>0) {
+          cover = iterateTile(i, j, board, cover);
+        }
+        else if(cover[i][j]==-1) {
+          return null;
+        }
+      }
+    }
+    if(iterationChange) {
+      changes = true;
+    } else {
+      changes = false;
+    }
+    board1.printBoard(cover);
     return cover;
   }
 
@@ -66,35 +116,85 @@ public class Solver {
         } else if (y+j < 0 || y+j > board[i].length - 1) {
           continue;
         } else if (cover[x+i][y+j]==-3) {
-          points.add(new Point(x+i,y+j,-3));
           unknown++;
         } else if (cover[x+i][y+j]==-2) {
-          points.add(new Point(x+i,y+j,-2));
           flagged++;
         }
+        points.add(new Point(x+i,y+j,cover[x+i][y+j]));
       }
     }
-    System.out.println("Flagged: "+flagged);
-    System.out.println("Unknown: "+unknown);
-    if(flagged==value || unknown==value&&flagged==0 || flagged+unknown==value) {
-      System.out.println("Hit!");
+    if((unknown==value&&flagged==0) || (flagged+unknown==value&&unknown!=0) || (flagged==value&&unknown>0)) {
+      iterationChange = true;
       for(int i = 0; i < points.size(); i++) {
         Point point = points.get(i);
-        System.out.println("X:"+point.getX());
-        System.out.println("Y:"+point.getY());
-        System.out.println("Value:"+point.getValue());
-        if(point.getValue()==-3) {
-          System.out.println(board[point.getX()][point.getY()]);
-          cover[point.getX()][point.getY()] = board[point.getX()][point.getY()];
+        if(unknown==value&&flagged==0 || (flagged+unknown==value&&unknown!=0)) {
+          if(point.getValue()==-3) {
+            cover[point.getX()][point.getY()] = -2;
+          }
+        } else if(flagged==value&&unknown>0) {
+          if(point.getValue()==-3) {
+            if(board[point.getX()][point.getY()]==0) {
+              cover = uncoverBoard(point.getX(),point.getY(),board,cover);
+            } else {
+              cover[point.getX()][point.getY()] = board[point.getX()][point.getY()];
+            }
+          }
         }
       }
-    } else {
-      System.out.println("nope");
     }
+    board1.printBoard(cover);
+    return cover;
+  }
+
+  // works!
+  public int[][] iterateRandomTile(int r, int c, int[][] board, int[][] cover) {
+    int x = r - 1;
+    int y = c - 1;
+    int value = board[r][c];
+    int unknown = 0;
+    int flagged = 0;
+    ArrayList<Point> points = new ArrayList<Point>();
+    for(int i=0; i<3; i++) {
+      for(int j=0; j<3; j++) {
+        if(i == 1 && j == 1) {
+          continue;
+        }
+        if(x+i < 0 || x+i > board.length - 1) {
+          continue;
+        } else if (y+j < 0 || y+j > board[i].length - 1) {
+          continue;
+        } else if (cover[x+i][y+j]==-3) {
+          unknown++;
+        } else if (cover[x+i][y+j]==-2) {
+          flagged++;
+        }
+        points.add(new Point(x+i,y+j,cover[x+i][y+j]));
+      }
+    }
+    ArrayList<Point> unknownPoints = new ArrayList<Point>();
+    for(int i=0; i<points.size(); i++) {
+      Point point = points.get(i);
+      if(point.getValue()==-3) {
+        unknownPoints.add(new Point(point.getX(),point.getY(),-3));
+      }
+    }
+    if(unknownPoints.size()!=0) {
+      int randNum = (int)(Math.random()*unknownPoints.size());
+      Point randomUnknown = unknownPoints.get(randNum);
+      // find value on board, to uncover or nah
+      if(board[randomUnknown.getX()][randomUnknown.getY()]!=0) {
+        cover[randomUnknown.getX()][randomUnknown.getY()] = board[randomUnknown.getX()][randomUnknown.getY()];
+      } else {
+        cover = uncoverBoard(randomUnknown.getX(),randomUnknown.getY(),board,cover);
+      }
+      changes = true;
+    }
+    board1.printBoard(cover);
     return cover;
   }
 
   // picks a random spot on the board to start, calls uncoverBoard to uncover location
+  // works!
   public int[][] pickRandom(int[][] board, int[][] cover) {
     int randX = (int)(Math.random()*board.length);
     int randY = (int)(Math.random()*board[0].length);
@@ -158,6 +258,23 @@ public class Solver {
       }
     }
     return uncoveredBoard;
+  }
+
+  // works!
+  public boolean checkFinish(int[][] cover) {
+    int numMines = board1.getNumMines();
+    int count = 0;
+    for(int i = 0; i < cover.length; i++) {
+      for(int j = 0; j < cover[i].length; j++) {
+        if(cover[i][j]==-2) {
+          count++;
+        }
+      }
+    }
+    if(count==numMines) {
+      return true;
+    }
+    return false;
   }
 
   // fills the cover board with -3

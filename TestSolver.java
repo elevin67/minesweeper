@@ -9,8 +9,9 @@ public class TestSolver {
   }
 
   public void runOneRandom() {
-    Board board = new Board(16,16,40);
+    Board board = new Board(10,10,10);
     Solver solver = new Solver(board);
+
     Boolean result = solver.solveBoard(solver.getGameBoard(),solver.getCover());
     if(result) {
       System.out.println("you win!");
