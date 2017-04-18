@@ -107,7 +107,7 @@ public class Solver {
       }
     }
     for(int i = randX; i>=0; i--){
-      for(int j = randY; j>=0; j--){
+      for(int j  = randY; j>=0; j--){
         if(board[i][j]==0){
           cover=uncoverBoard(i,j,board,cover);
           return cover;
