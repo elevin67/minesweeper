@@ -37,9 +37,9 @@ public class Solver {
     cover = iterateBoard(board,cover);
     while(cover!=null) {
       if(!changes) {
-        int randX = (int)(Math.random()*board.length);
-        int randY = (int)(Math.random()*board[0].length);
-        cover = iterateRandomTile(randX,randY,board,cover);
+//        int randX = (int)(Math.random()*board.length);
+//        int randY = (int)(Math.random()*board[0].length);
+        cover = iterateRandomBoard(board,cover);
       } else {
         cover = iterateBoard(board,cover);
       }
@@ -55,19 +55,18 @@ public class Solver {
   }
 
   private int[][] iterateRandomBoard(int[][] board, int[][] cover) {
+    iterationChange = false;
     for(int i = 0; i < board.length; i++) {
-      for(int j = 0; j < board[i].length; j++) {
-        // if(finished) {
-        //   break;
-        // }
-        if(cover[i][j]>0) {
-          cover = iterateRandomTile(i,j,board,cover);
-        }
-        // else if(cover[i][j]==-2) {
-        //   finished = checkFinish(board,cover);
-        // }
-        else if(cover[i][j]==-1) {
-          return null;
+      for (int j = 0; j < board[i].length; j++) {
+        if (cover[i][j] > 0) {
+          cover = iterateRandomTile(i, j, board, cover);
+          if (iterationChange) {
+            changes = true;
+            board1.printBoard(cover);
+            return cover;
+          } else {
+            changes = false;
+          }
         }
       }
     }
@@ -135,6 +134,7 @@ public class Solver {
           if(point.getValue()==-3) {
             if(board[point.getX()][point.getY()]==0) {
               cover = uncoverBoard(point.getX(),point.getY(),board,cover);
+//              cover[point.getX()][point.getY()] = board[point.getX()][point.getY()];
             } else {
               cover[point.getX()][point.getY()] = board[point.getX()][point.getY()];
             }
@@ -142,7 +142,7 @@ public class Solver {
         }
       }
     }
-    board1.printBoard(cover);
+//    board1.printBoard(cover);
     return cover;
   }
 
@@ -179,6 +179,7 @@ public class Solver {
       }
     }
     if(unknownPoints.size()!=0) {
+      iterationChange = true;
       int randNum = (int)(Math.random()*unknownPoints.size());
       Point randomUnknown = unknownPoints.get(randNum);
       // find value on board, to uncover or nah
@@ -187,9 +188,8 @@ public class Solver {
       } else {
         cover = uncoverBoard(randomUnknown.getX(),randomUnknown.getY(),board,cover);
       }
-      changes = true;
     }
-    board1.printBoard(cover);
+//    board1.printBoard(cover);
     return cover;
   }
 
@@ -233,6 +233,7 @@ public class Solver {
   // uncovers the board at the random spot (r,c)
   // works, but very inefficient
   private int[][] uncoverBoard(int r,int c, int[][] board, int[][] cover) {
+    cover[r][c] = board[r][c];
     int x = r - 1;
     int y = c - 1;
     int[][] uncoveredBoard = cover;

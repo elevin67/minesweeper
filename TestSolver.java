@@ -9,7 +9,7 @@ public class TestSolver {
   }
 
   public void runOneRandom() {
-    Board board = new Board(10,10,10);
+    Board board = new Board(16,16,40);
     Solver solver = new Solver(board);
 
     Boolean result = solver.solveBoard(solver.getGameBoard(),solver.getCover());
@@ -40,6 +40,14 @@ public class TestSolver {
   //   board.printBoard(k);
     TestSolver testSolver = new TestSolver();
     testSolver.runOneRandom();
+//    Board b = new Board(16,16,40);
+//    Solver solver = new Solver(b);
+//    int[][] cover = {{2,1,3},{-3,1,2},{1,2,-2}};
+//    int[][] board = {{2,1,3},{1,1,2},{1,2,-1}};
+//    b.printBoard(cover);
+//    b.printBoard(board);
+//    int[][] k = solver.iterateTile(1,1,board,cover);
+//    b.printBoard(k);
   }
 
 }
