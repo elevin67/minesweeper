@@ -95,7 +95,18 @@ public class Solver {
     board1.printBoard(cover);
     return cover;
   }
-
+  public int[][] oneToOnePattern(int r, int c, int[][] board, int[][] cover){
+    return cover;
+  }
+  public int[][] oneToTwoPattern(int r, int c, int[][] board, int[][] cover){
+    return cover;
+  }
+  public int[][] oneToTwoToOnePattern(int r, int c, int[][] board, int[][] cover){
+    return cover;
+  }
+  public int[][] oneToTwoToTwoToOnePattern(int r, int c, int[][] board, int[][] cover){
+    return cover;
+  }
   // just for one tile. Will need a function that runs over all tiles until no obvious moves are left available
   // works!
   public int[][] iterateTile(int r, int c, int[][] board, int[][] cover) {
@@ -193,7 +204,7 @@ public class Solver {
     return cover;
   }
 
-  // picks a random spot on the board to start, calls uncoverBoard to uncover location
+  // picks a random spot empty spot in the board. Selected spot is the first move.
   // works!
   public int[][] pickRandom(int[][] board, int[][] cover) {
     int randX = (int)(Math.random()*board.length);
