@@ -33,14 +33,14 @@ public class Solver {
     if(cover==null) {
       return false;
     }
-    board1.printBoard(board);
-    board1.printBoard(cover);
+//    board1.printBoard(board);
+//    board1.printBoard(cover);
     cover = iterateBoard(board,cover);
     while(cover!=null) {
       if(!changes) {
 //        int randX = (int)(Math.random()*board.length);
 //        int randY = (int)(Math.random()*board[0].length);
-        cover = iterateRandomBoard(board,cover);
+        cover = iterateOptimizedBoard(board,cover);
       } else {
         cover = iterateBoard(board,cover);
       }
@@ -67,6 +67,27 @@ public class Solver {
             return cover;
           } else {
             changes = false;
+          }
+        }
+      }
+    }
+    return cover;
+  }
+
+  private int[][] iterateOptimizedBoard(int[][] board, int[][] cover) {
+    iterationChange = false;
+    for(int k = 1; k <= 8; k++) {
+      for(int i = 0; i < board.length; i++) {
+        for(int j = 0; j < board[i].length; j++) {
+          if(cover[i][j] > 0) {
+            cover = iterateOptimizedTile(i,j,board,cover,k);
+            if (iterationChange) {
+              changes = true;
+//              board1.printBoard(cover);
+              return cover;
+            } else {
+              changes = false;
+            }
           }
         }
       }
@@ -202,6 +223,51 @@ public class Solver {
       }
     }
 //    board1.printBoard(cover);
+    return cover;
+  }
+
+  public int[][] iterateOptimizedTile(int r, int c, int[][] board, int[][] cover, int k) {
+    int x = r - 1;
+    int y = c - 1;
+    int value = board[r][c];
+    int unknown = 0;
+    int flagged = 0;
+    ArrayList<Point> points = new ArrayList<Point>();
+    for(int i=0; i<3; i++) {
+      for(int j=0; j<3; j++) {
+        if(i == 1 && j == 1) {
+          continue;
+        }
+        if(x+i < 0 || x+i > board.length - 1) {
+          continue;
+        } else if (y+j < 0 || y+j > board[i].length - 1) {
+          continue;
+        } else if (cover[x+i][y+j]==-3) {
+          unknown++;
+        } else if (cover[x+i][y+j]==-2) {
+          flagged++;
+        }
+        points.add(new Point(x+i,y+j,cover[x+i][y+j]));
+      }
+    }
+    ArrayList<Point> unknownPoints = new ArrayList<Point>();
+    for(int i=0; i<points.size(); i++) {
+      Point point = points.get(i);
+      if(point.getValue()==-3) {
+        unknownPoints.add(new Point(point.getX(),point.getY(),-3));
+      }
+    }
+    if(unknownPoints.size()==k+(value-flagged)) {
+      iterationChange = true;
+      int randNum = (int)(Math.random()*unknownPoints.size());
+      Point randomUnknown = unknownPoints.get(randNum);
+      // find value on board, to uncover or nah
+      if(board[randomUnknown.getX()][randomUnknown.getY()]!=0) {
+        cover[randomUnknown.getX()][randomUnknown.getY()] = board[randomUnknown.getX()][randomUnknown.getY()];
+      } else {
+        cover = uncoverBoard(randomUnknown.getX(),randomUnknown.getY(),board,cover);
+      }
+    }
     return cover;
   }
 
