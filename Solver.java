@@ -28,11 +28,12 @@ public class Solver {
 
   // puts flags (-2) on all the mines
   public boolean solveBoard(int[][] board, int[][] cover) {
-    board1.printBoard(board);
+//    board1.printBoard(board);
     cover = pickRandom(board,cover);
     if(cover==null) {
       return false;
     }
+    board1.printBoard(board);
     board1.printBoard(cover);
     cover = iterateBoard(board,cover);
     while(cover!=null) {
@@ -62,7 +63,7 @@ public class Solver {
           cover = iterateRandomTile(i, j, board, cover);
           if (iterationChange) {
             changes = true;
-            board1.printBoard(cover);
+//            board1.printBoard(cover);
             return cover;
           } else {
             changes = false;
@@ -92,7 +93,7 @@ public class Solver {
     } else {
       changes = false;
     }
-    board1.printBoard(cover);
+//    board1.printBoard(cover);
     return cover;
   }
   public int[][] oneToOnePattern(int r, int c, int[][] board, int[][] cover){
@@ -225,6 +226,7 @@ public class Solver {
         }
       }
     }
+    cover[randX][randY] = board[randX][randY];
     return cover;
     /**
     int randX = (int)(Math.random()*board.length);
