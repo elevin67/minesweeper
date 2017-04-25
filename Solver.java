@@ -27,19 +27,41 @@ public class Solver {
   }
 
   // puts flags (-2) on all the mines
-  public boolean solveBoard(int[][] board, int[][] cover) {
-//    board1.printBoard(board);
+  public boolean solveRandomBoard(int[][] board, int[][] cover) {
     cover = pickRandom(board,cover);
+    board1.printBoard(board);
+    board1.printBoard(cover);
     if(cover==null) {
       return false;
     }
-//    board1.printBoard(board);
-//    board1.printBoard(cover);
     cover = iterateBoard(board,cover);
     while(cover!=null) {
       if(!changes) {
-//        int randX = (int)(Math.random()*board.length);
-//        int randY = (int)(Math.random()*board[0].length);
+        cover = iterateRandomBoard(board,cover);
+      } else {
+        cover = iterateBoard(board,cover);
+      }
+      if(cover==null) {
+        continue;
+      }
+
+
+      if(checkFinish(cover)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public boolean solveOptimizedBoard(int[][] board, int[][] cover) {
+    cover = pickRandom(board,cover);
+    board1.printBoard(cover);
+    if(cover==null) {
+      return false;
+    }
+    cover = iterateBoard(board,cover);
+    while(cover!=null) {
+      if(!changes) {
         cover = iterateOptimizedBoard(board,cover);
       } else {
         cover = iterateBoard(board,cover);
@@ -48,9 +70,11 @@ public class Solver {
         continue;
       }
 
-      if(checkFinish(cover)==true) {
+
+      if(checkFinish(cover)) {
         return true;
       }
+
     }
     return false;
   }
@@ -63,11 +87,14 @@ public class Solver {
           cover = iterateRandomTile(i, j, board, cover);
           if (iterationChange) {
             changes = true;
-//            board1.printBoard(cover);
+            System.out.println("iterateRandomBoard");
+            board1.printBoard(cover);
             return cover;
           } else {
             changes = false;
           }
+        } else if(cover[i][j] == -1) {
+          return null;
         }
       }
     }
@@ -83,11 +110,14 @@ public class Solver {
             cover = iterateOptimizedTile(i,j,board,cover,k);
             if (iterationChange) {
               changes = true;
-//              board1.printBoard(cover);
+              System.out.println("iterateOptimizedBoard");
+              board1.printBoard(cover);
               return cover;
             } else {
               changes = false;
             }
+          } else if(cover[i][j] == -1) {
+            return null;
           }
         }
       }
@@ -104,7 +134,7 @@ public class Solver {
         if(cover[i][j]>0) {
           cover = iterateTile(i, j, board, cover);
         }
-        else if(cover[i][j]==-1) {
+        if(cover[i][j]==-1) {
           return null;
         }
       }
@@ -114,7 +144,8 @@ public class Solver {
     } else {
       changes = false;
     }
-//    board1.printBoard(cover);
+    System.out.println("iterateBoard");
+    board1.printBoard(cover);
     return cover;
   }
   public int[][] oneToOnePattern(int r, int c, int[][] board, int[][] cover){
@@ -175,7 +206,8 @@ public class Solver {
         }
       }
     }
-//    board1.printBoard(cover);
+    System.out.println("iterateTile");
+    board1.printBoard(cover);
     return cover;
   }
 
@@ -222,7 +254,8 @@ public class Solver {
         cover = uncoverBoard(randomUnknown.getX(),randomUnknown.getY(),board,cover);
       }
     }
-//    board1.printBoard(cover);
+    System.out.println("iterateRandomTile");
+    board1.printBoard(cover);
     return cover;
   }
 
@@ -268,8 +301,16 @@ public class Solver {
         cover = uncoverBoard(randomUnknown.getX(),randomUnknown.getY(),board,cover);
       }
     }
+    System.out.println("iterateOptimizedBoard");
+    board1.printBoard(cover);
     return cover;
   }
+
+  // Shilad says:
+  // * Write this as a while loop
+  // * Pick a location
+  // * If the location is covered, do a BFS from that location to uncover nearby cells and stop
+  // * Otherwise, keep looping
 
   // picks a random spot empty spot in the board. Selected spot is the first move.
   // works!
@@ -295,20 +336,21 @@ public class Solver {
     cover[randX][randY] = board[randX][randY];
     return cover;
     /**
-    int randX = (int)(Math.random()*board.length);
-    int randY = (int)(Math.random()*board[0].length);
-    int randSpot = board[randX][randY];
-    System.out.println(randX + " " + randY);
-    if(randSpot==0) {
-      cover = uncoverBoard(randX,randY, board, cover);
-    } else if(randSpot==-1) {
-      return null;
-    } else {
-      cover[randX][randY] = randSpot;
-    }
-    return cover;**/
+     int randX = (int)(Math.random()*board.length);
+     int randY = (int)(Math.random()*board[0].length);
+     int randSpot = board[randX][randY];
+     System.out.println(randX + " " + randY);
+     if(randSpot==0) {
+     cover = uncoverBoard(randX,randY, board, cover);
+     } else if(randSpot==-1) {
+     return null;
+     } else {
+     cover[randX][randY] = randSpot;
+     }
+     return cover;**/
   }
 
+  // This should be replaced with a BFS
   // uncovers the board at the random spot (r,c)
   // works, but very inefficient
   private int[][] uncoverBoard(int r,int c, int[][] board, int[][] cover) {
@@ -321,18 +363,16 @@ public class Solver {
         if(i == 1 && j == 1) {
           continue;
         }
-        if(x+i < 0 || x+i > board.length - 1) {
+        if(x+i < 0 || x+i >= board.length) {
           continue;
-        } else if (y+j < 0 || y+j > board[i].length - 1) {
+        } else if (y+j < 0 || y+j >= board[i].length) {
           continue;
         } else if(board[x+i][y+j] == 0){
-          if(cover[x+i][y+j] == 0) {
-            continue;
-          } else {
+          if(cover[x+i][y+j] != 0) {
             cover[x+i][y+j] = 0;
             uncoveredBoard = uncoverBoard(x+i,y+j,board, uncoveredBoard);
           }
-        } else if(board[x+i][y+j] != -3 && board[x+i][y+j] != -2 && board[x+i][y+j] != -1) {
+        } else if(board[x+i][y+j] != -1) {
           uncoveredBoard[x+i][y+j] = board[x+i][y+j];
         }
       }
