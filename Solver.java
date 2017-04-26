@@ -131,10 +131,10 @@ public class Solver {
     iterationChange = false;
     for(int i = 0; i < board.length; i++) {
       for(int j = 0; j < board[i].length; j++) {
-        if(cover[i][j]>0) {
+        if(cover[i][j] > 0) {
           cover = iterateTile(i, j, board, cover);
         }
-        if(cover[i][j]==-1) {
+        if(cover[i][j] == -1) {
           return null;
         }
       }
@@ -183,41 +183,17 @@ public class Solver {
 
   // works!
   public int[][] iterateRandomTile(int r, int c, int[][] board, int[][] cover) {
-    int x = r - 1;
-    int y = c - 1;
+    ArrayList<Point> points = getAdjacent(r,c,cover);
+    ArrayList<Point> unknownPoints = getUnknown(points);
+    ArrayList<Point> flaggedPoints = getFlagged(points);
+    int unknown = unknownPoints.size();
+    int flagged = flaggedPoints.size();
     int value = board[r][c];
-    int unknown = 0;
-    int flagged = 0;
-    ArrayList<Point> points = new ArrayList<Point>();
-    for(int i=0; i<3; i++) {
-      for(int j=0; j<3; j++) {
-        if(i == 1 && j == 1) {
-          continue;
-        }
-        if(x+i < 0 || x+i >= board.length) {
-          continue;
-        } else if (y+j < 0 || y+j >= board[i].length) {
-          continue;
-        } else if (cover[x+i][y+j]==-3) {
-          unknown++;
-        } else if (cover[x+i][y+j]==-2) {
-          flagged++;
-        }
-        points.add(new Point(x+i,y+j,cover[x+i][y+j]));
-      }
-    }
-    ArrayList<Point> unknownPoints = new ArrayList<Point>();
-    for(int i=0; i<points.size(); i++) {
-      Point point = points.get(i);
-      if(point.getValue()==-3) {
-        unknownPoints.add(new Point(point.getX(),point.getY(),-3));
-      }
-    }
+
     if(unknownPoints.size()!=0) {
       iterationChange = true;
       int randNum = (int)(Math.random()*unknownPoints.size());
       Point randomUnknown = unknownPoints.get(randNum);
-      // find value on board, to uncover or nah
       if(board[randomUnknown.getX()][randomUnknown.getY()]!=0) {
         cover[randomUnknown.getX()][randomUnknown.getY()] = board[randomUnknown.getX()][randomUnknown.getY()];
       } else {
@@ -230,41 +206,18 @@ public class Solver {
   }
 
   public int[][] iterateOptimizedTile(int r, int c, int[][] board, int[][] cover, int k) {
-    int x = r - 1;
-    int y = c - 1;
+    ArrayList<Point> points = getAdjacent(r,c,cover);
+    ArrayList<Point> unknownPoints = getUnknown(points);
+    ArrayList<Point> flaggedPoints = getFlagged(points);
+    int unknown = unknownPoints.size();
+    int flagged = flaggedPoints.size();
     int value = board[r][c];
-    int unknown = 0;
-    int flagged = 0;
-    ArrayList<Point> points = new ArrayList<Point>();
-    for(int i=0; i<3; i++) {
-      for(int j=0; j<3; j++) {
-        if(i == 1 && j == 1) {
-          continue;
-        }
-        if(x+i < 0 || x+i >= board.length) {
-          continue;
-        } else if (y+j < 0 || y+j >= board[i].length) {
-          continue;
-        } else if (cover[x+i][y+j]==-3) {
-          unknown++;
-        } else if (cover[x+i][y+j]==-2) {
-          flagged++;
-        }
-        points.add(new Point(x+i,y+j,cover[x+i][y+j]));
-      }
-    }
-    ArrayList<Point> unknownPoints = new ArrayList<Point>();
-    for(int i=0; i<points.size(); i++) {
-      Point point = points.get(i);
-      if(point.getValue()==-3) {
-        unknownPoints.add(new Point(point.getX(),point.getY(),-3));
-      }
-    }
+
     if(unknownPoints.size()==k+(value-flagged)) {
       iterationChange = true;
       int randNum = (int)(Math.random()*unknownPoints.size());
       Point randomUnknown = unknownPoints.get(randNum);
-      // find value on board, to uncover or nah
+
       if(board[randomUnknown.getX()][randomUnknown.getY()]!=0) {
         cover[randomUnknown.getX()][randomUnknown.getY()] = board[randomUnknown.getX()][randomUnknown.getY()];
       } else {
