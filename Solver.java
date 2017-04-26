@@ -152,48 +152,27 @@ public class Solver {
   // just for one tile. Will need a function that runs over all tiles until no obvious moves are left available
   // works!
   public int[][] iterateTile(int r, int c, int[][] board, int[][] cover) {
-    int x = r - 1;
-    int y = c - 1;
+    ArrayList<Point> points = getAdjacent(r,c,cover);
+    ArrayList<Point> unknownPoints = getUnknown(points);
+    ArrayList<Point> flaggedPoints = getFlagged(points);
+    int unknown = unknownPoints.size();
+    int flagged = flaggedPoints.size();
     int value = board[r][c];
-    int unknown = 0;
-    int flagged = 0;
-    ArrayList<Point> points = new ArrayList<Point>();
-    for(int i=0; i<3; i++) {
-      for(int j=0; j<3; j++) {
-        if(i == 1 && j == 1) {
-          continue;
-        }
-        if(x+i < 0 || x+i >= board.length) {
-          continue;
-        } else if (y+j < 0 || y+j >= board[i].length) {
-          continue;
-        } else if (cover[x+i][y+j]==-3) {
-          unknown++;
-        } else if (cover[x+i][y+j]==-2) {
-          flagged++;
-        }
-        points.add(new Point(x+i,y+j,cover[x+i][y+j]));
-      }
-    }
 
-    // need to make this easier to follow
-    if((unknown==value&&flagged==0) || (flagged+unknown==value&&unknown!=0) || (flagged==value&&unknown>0)) {
+    if((unknown==value&&flagged==0) || (flagged+unknown==value&&unknown!=0)) {
       iterationChange = true;
-      for(int i = 0; i < points.size(); i++) {
-        Point point = points.get(i);
-        if(unknown==value&&flagged==0 || (flagged+unknown==value&&unknown!=0)) {
-          if(point.getValue()==-3) {
-            cover[point.getX()][point.getY()] = -2;
-          }
-        } else if(flagged==value&&unknown>0) {
-          if(point.getValue()==-3) {
-            if(board[point.getX()][point.getY()]==0) {
-              cover = uncoverBoard(point.getX(),point.getY(),board,cover);
-//              cover[point.getX()][point.getY()] = board[point.getX()][point.getY()];
-            } else {
-              cover[point.getX()][point.getY()] = board[point.getX()][point.getY()];
-            }
-          }
+      for(int i = 0; i < unknown; i++) {
+        Point unknownPoint = unknownPoints.get(i);
+        cover[unknownPoint.getX()][unknownPoint.getY()] = -2;
+      }
+    } else if(flagged==value&&unknown>0) {
+      iterationChange = true;
+      for(int i = 0; i < unknown; i++) {
+        Point unknownPoint = unknownPoints.get(i);
+        if(board[unknownPoint.getX()][unknownPoint.getY()]==0) {
+          cover = uncoverBoard(unknownPoint.getX(),unknownPoint.getY(),board,cover);
+        } else {
+          cover[unknownPoint.getX()][unknownPoint.getY()] = board[unknownPoint.getX()][unknownPoint.getY()];
         }
       }
     }
@@ -393,6 +372,7 @@ public class Solver {
     return cover;
   }
 
+  // works
   private ArrayList<Point> getAdjacent(int r, int c, int[][] cover) {
     int x = r - 1;
     int y = c - 1;
@@ -413,12 +393,28 @@ public class Solver {
     return points;
   }
 
-  private int getFlagged(ArrayList<Point> points) {
+  // works
+  private ArrayList<Point> getFlagged(ArrayList<Point> points) {
+    ArrayList<Point> flagged = new ArrayList<>();
     for(int i = 0; i < points.size(); i++) {
-
+      if(points.get(i).getValue()==-2) {
+        flagged.add(points.get(i));
+      }
     }
 
-    return 1;
+    return flagged;
+  }
+
+  // works
+  private ArrayList<Point> getUnknown(ArrayList<Point> points) {
+    ArrayList<Point> unknown = new ArrayList<>();
+    for(int i = 0; i < points.size(); i++) {
+      if(points.get(i).getValue()==-3) {
+        unknown.add(points.get(i));
+      }
+    }
+
+    return unknown;
   }
 
   // works!
