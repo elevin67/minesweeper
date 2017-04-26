@@ -29,8 +29,8 @@ public class Solver {
   // puts flags (-2) on all the mines
   public boolean solveRandomBoard(int[][] board, int[][] cover) {
     cover = pickRandom(board,cover);
-    board1.printBoard(board);
-    board1.printBoard(cover);
+//    board1.printBoard(board);
+//    board1.printBoard(cover);
     if(cover==null) {
       return false;
     }
@@ -55,7 +55,7 @@ public class Solver {
 
   public boolean solveOptimizedBoard(int[][] board, int[][] cover) {
     cover = pickRandom(board,cover);
-    board1.printBoard(cover);
+//    board1.printBoard(cover);
     if(cover==null) {
       return false;
     }
@@ -87,8 +87,8 @@ public class Solver {
           cover = iterateRandomTile(i, j, board, cover);
           if (iterationChange) {
             changes = true;
-            System.out.println("iterateRandomBoard");
-            board1.printBoard(cover);
+//            System.out.println("iterateRandomBoard");
+//            board1.printBoard(cover);
             return cover;
           } else {
             changes = false;
@@ -110,8 +110,8 @@ public class Solver {
             cover = iterateOptimizedTile(i,j,board,cover,k);
             if (iterationChange) {
               changes = true;
-              System.out.println("iterateOptimizedBoard");
-              board1.printBoard(cover);
+//              System.out.println("iterateOptimizedBoard");
+//              board1.printBoard(cover);
               return cover;
             } else {
               changes = false;
@@ -144,22 +144,11 @@ public class Solver {
     } else {
       changes = false;
     }
-    System.out.println("iterateBoard");
-    board1.printBoard(cover);
+//    System.out.println("iterateBoard");
+//    board1.printBoard(cover);
     return cover;
   }
-  public int[][] oneToOnePattern(int r, int c, int[][] board, int[][] cover){
-    return cover;
-  }
-  public int[][] oneToTwoPattern(int r, int c, int[][] board, int[][] cover){
-    return cover;
-  }
-  public int[][] oneToTwoToOnePattern(int r, int c, int[][] board, int[][] cover){
-    return cover;
-  }
-  public int[][] oneToTwoToTwoToOnePattern(int r, int c, int[][] board, int[][] cover){
-    return cover;
-  }
+
   // just for one tile. Will need a function that runs over all tiles until no obvious moves are left available
   // works!
   public int[][] iterateTile(int r, int c, int[][] board, int[][] cover) {
@@ -174,9 +163,9 @@ public class Solver {
         if(i == 1 && j == 1) {
           continue;
         }
-        if(x+i < 0 || x+i > board.length - 1) {
+        if(x+i < 0 || x+i >= board.length) {
           continue;
-        } else if (y+j < 0 || y+j > board[i].length - 1) {
+        } else if (y+j < 0 || y+j >= board[i].length) {
           continue;
         } else if (cover[x+i][y+j]==-3) {
           unknown++;
@@ -186,6 +175,8 @@ public class Solver {
         points.add(new Point(x+i,y+j,cover[x+i][y+j]));
       }
     }
+
+    // need to make this easier to follow
     if((unknown==value&&flagged==0) || (flagged+unknown==value&&unknown!=0) || (flagged==value&&unknown>0)) {
       iterationChange = true;
       for(int i = 0; i < points.size(); i++) {
@@ -206,8 +197,8 @@ public class Solver {
         }
       }
     }
-    System.out.println("iterateTile");
-    board1.printBoard(cover);
+//    System.out.println("iterateTile");
+//    board1.printBoard(cover);
     return cover;
   }
 
@@ -224,9 +215,9 @@ public class Solver {
         if(i == 1 && j == 1) {
           continue;
         }
-        if(x+i < 0 || x+i > board.length - 1) {
+        if(x+i < 0 || x+i >= board.length) {
           continue;
-        } else if (y+j < 0 || y+j > board[i].length - 1) {
+        } else if (y+j < 0 || y+j >= board[i].length) {
           continue;
         } else if (cover[x+i][y+j]==-3) {
           unknown++;
@@ -254,8 +245,8 @@ public class Solver {
         cover = uncoverBoard(randomUnknown.getX(),randomUnknown.getY(),board,cover);
       }
     }
-    System.out.println("iterateRandomTile");
-    board1.printBoard(cover);
+//    System.out.println("iterateRandomTile");
+//    board1.printBoard(cover);
     return cover;
   }
 
@@ -271,9 +262,9 @@ public class Solver {
         if(i == 1 && j == 1) {
           continue;
         }
-        if(x+i < 0 || x+i > board.length - 1) {
+        if(x+i < 0 || x+i >= board.length) {
           continue;
-        } else if (y+j < 0 || y+j > board[i].length - 1) {
+        } else if (y+j < 0 || y+j >= board[i].length) {
           continue;
         } else if (cover[x+i][y+j]==-3) {
           unknown++;
@@ -301,8 +292,8 @@ public class Solver {
         cover = uncoverBoard(randomUnknown.getX(),randomUnknown.getY(),board,cover);
       }
     }
-    System.out.println("iterateOptimizedBoard");
-    board1.printBoard(cover);
+//    System.out.println("iterateOptimizedBoard");
+//    board1.printBoard(cover);
     return cover;
   }
 
@@ -320,7 +311,7 @@ public class Solver {
     for(int i = randX; i<board.length; i++){
       for(int j = randY; j<board[0].length; j++){
         if(board[i][j]==0){
-          cover=uncoverBoard(i,j,board,cover);
+          cover = uncoverBoard(i,j,board,cover);
           return cover;
         }
       }
@@ -328,7 +319,7 @@ public class Solver {
     for(int i = randX; i>=0; i--){
       for(int j  = randY; j>=0; j--){
         if(board[i][j]==0){
-          cover=uncoverBoard(i,j,board,cover);
+          cover = uncoverBoard(i,j,board,cover);
           return cover;
         }
       }
@@ -378,6 +369,56 @@ public class Solver {
       }
     }
     return uncoveredBoard;
+  }
+
+  private int[][] uncoverBoardBFS(int r, int c, int[][] board, int[][] cover) {
+    Queue<Point> points = new LinkedList<>();
+    points.add(new Point(r,c,cover[r][c]));
+    while(!points.isEmpty()) {
+      Point point = points.remove();
+      ArrayList<Point> adjacent = getAdjacent(point.getX(),point.getY(),cover);
+      for(int i = 0; i < adjacent.size(); i++) {
+        Point adjacentPoint = adjacent.get(i);
+        if(points.contains(adjacentPoint)) {
+          continue;
+        } else if(board[adjacentPoint.getX()][adjacentPoint.getY()] > 0) {
+          cover[adjacentPoint.getX()][adjacentPoint.getY()] = board[adjacentPoint.getX()][adjacentPoint.getY()];
+        } else if(board[adjacentPoint.getX()][adjacentPoint.getY()] == 0) {
+          points.add(adjacentPoint);
+          cover[adjacentPoint.getX()][adjacentPoint.getY()] = board[adjacentPoint.getX()][adjacentPoint.getY()];
+        }
+      }
+    }
+
+    return cover;
+  }
+
+  private ArrayList<Point> getAdjacent(int r, int c, int[][] cover) {
+    int x = r - 1;
+    int y = c - 1;
+    ArrayList<Point> points = new ArrayList<Point>();
+    for(int i=0; i<3; i++) {
+      for(int j=0; j<3; j++) {
+        if(i == 1 && j == 1) {
+          continue;
+        }
+        if(x+i < 0 || x+i >= cover.length) {
+          continue;
+        } else if (y+j < 0 || y+j >= cover[i].length) {
+          continue;
+        }
+        points.add(new Point(x+i,y+j,cover[x+i][y+j]));
+      }
+    }
+    return points;
+  }
+
+  private int getFlagged(ArrayList<Point> points) {
+    for(int i = 0; i < points.size(); i++) {
+
+    }
+
+    return 1;
   }
 
   // works!
