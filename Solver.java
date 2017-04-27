@@ -26,9 +26,10 @@ public class Solver {
     return cover;
   }
 
-  // puts flags (-2) on all the mines
+  // need to add a function that checks if mine surrounded completely by other mines
   public boolean solveRandomBoard(int[][] board, int[][] cover) {
     cover = pickRandom(board,cover);
+//    System.out.println("Board");
 //    board1.printBoard(board);
 //    board1.printBoard(cover);
     if(cover==null) {
@@ -55,6 +56,8 @@ public class Solver {
 
   public boolean solveOptimizedBoard(int[][] board, int[][] cover) {
     cover = pickRandom(board,cover);
+//    System.out.println("Board");
+//    board1.printBoard(board);
 //    board1.printBoard(cover);
     if(cover==null) {
       return false;
@@ -186,9 +189,6 @@ public class Solver {
     ArrayList<Point> points = getAdjacent(r,c,cover);
     ArrayList<Point> unknownPoints = getUnknown(points);
     ArrayList<Point> flaggedPoints = getFlagged(points);
-    int unknown = unknownPoints.size();
-    int flagged = flaggedPoints.size();
-    int value = board[r][c];
 
     if(unknownPoints.size()!=0) {
       iterationChange = true;
@@ -209,7 +209,6 @@ public class Solver {
     ArrayList<Point> points = getAdjacent(r,c,cover);
     ArrayList<Point> unknownPoints = getUnknown(points);
     ArrayList<Point> flaggedPoints = getFlagged(points);
-    int unknown = unknownPoints.size();
     int flagged = flaggedPoints.size();
     int value = board[r][c];
 
@@ -243,7 +242,7 @@ public class Solver {
     for(int i = randX; i<board.length; i++){
       for(int j = randY; j<board[0].length; j++){
         if(board[i][j]==0){
-          cover = uncoverBoard(i,j,board,cover);
+          cover = uncoverBoardBFS(i,j,board,cover);
           return cover;
         }
       }
@@ -251,31 +250,19 @@ public class Solver {
     for(int i = randX; i>=0; i--){
       for(int j  = randY; j>=0; j--){
         if(board[i][j]==0){
-          cover = uncoverBoard(i,j,board,cover);
+          cover = uncoverBoardBFS(i,j,board,cover);
           return cover;
         }
       }
     }
     cover[randX][randY] = board[randX][randY];
     return cover;
-    /**
-     int randX = (int)(Math.random()*board.length);
-     int randY = (int)(Math.random()*board[0].length);
-     int randSpot = board[randX][randY];
-     System.out.println(randX + " " + randY);
-     if(randSpot==0) {
-     cover = uncoverBoard(randX,randY, board, cover);
-     } else if(randSpot==-1) {
-     return null;
-     } else {
-     cover[randX][randY] = randSpot;
-     }
-     return cover;**/
   }
 
   // This should be replaced with a BFS
   // uncovers the board at the random spot (r,c)
   // works, but very inefficient
+  // brute force, recursive solution
   private int[][] uncoverBoard(int r,int c, int[][] board, int[][] cover) {
     cover[r][c] = board[r][c];
     int x = r - 1;
@@ -303,20 +290,30 @@ public class Solver {
     return uncoveredBoard;
   }
 
+  // BFS
   private int[][] uncoverBoardBFS(int r, int c, int[][] board, int[][] cover) {
     Queue<Point> points = new LinkedList<>();
-    points.add(new Point(r,c,cover[r][c]));
+
+    ArrayList<Point> visited = new ArrayList<>();
+
+    Point firstPoint = new Point(r,c,cover[r][c]);
+    points.add(firstPoint);
+    visited.add(firstPoint);
+    cover[r][c] = board[r][c];
+
     while(!points.isEmpty()) {
       Point point = points.remove();
       ArrayList<Point> adjacent = getAdjacent(point.getX(),point.getY(),cover);
       for(int i = 0; i < adjacent.size(); i++) {
         Point adjacentPoint = adjacent.get(i);
-        if(points.contains(adjacentPoint)) {
+        // not finding point in visited
+        if(checkVisited(adjacentPoint,visited)) {
           continue;
         } else if(board[adjacentPoint.getX()][adjacentPoint.getY()] > 0) {
           cover[adjacentPoint.getX()][adjacentPoint.getY()] = board[adjacentPoint.getX()][adjacentPoint.getY()];
         } else if(board[adjacentPoint.getX()][adjacentPoint.getY()] == 0) {
           points.add(adjacentPoint);
+          visited.add(adjacentPoint);
           cover[adjacentPoint.getX()][adjacentPoint.getY()] = board[adjacentPoint.getX()][adjacentPoint.getY()];
         }
       }
@@ -371,7 +368,8 @@ public class Solver {
   }
 
   // works!
-  public boolean checkFinish(int[][] cover) {
+  // maybe add check for mine covered by other mines here?
+  private boolean checkFinish(int[][] cover) {
     int numMines = board1.getNumMines();
     int count = 0;
     for(int i = 0; i < cover.length; i++) {
@@ -383,7 +381,37 @@ public class Solver {
     }
     if(count==numMines) {
       return true;
+    } else if(count==numMines-1) {
+      if(checkForCoveredMine(cover)) {
+        return true;
+      }
     }
+    return false;
+  }
+
+  private boolean checkForCoveredMine(int[][] cover) {
+    for(int i = 0; i < cover.length; i++) {
+      for(int j = 0; j < cover[i].length; j++) {
+        if(cover[i][j]==-3) {
+          ArrayList<Point> adjacentPoints = getAdjacent(i,j,cover);
+          if(getFlagged(adjacentPoints).size()==adjacentPoints.size()) {
+            cover[i][j] = -2;
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  private boolean checkVisited(Point point, ArrayList<Point> points) {
+    for(int i = 0; i < points.size(); i++) {
+      Point j = points.get(i);
+      if(point.getX()==j.getX()&&point.getY()==j.getY()) {
+        return true;
+      }
+    }
+
     return false;
   }
 
