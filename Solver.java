@@ -291,6 +291,7 @@ public class Solver {
   }
 
   // BFS
+  // works!
   private int[][] uncoverBoardBFS(int r, int c, int[][] board, int[][] cover) {
     Queue<Point> points = new LinkedList<>();
 
