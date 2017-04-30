@@ -26,7 +26,7 @@ public class Solver {
     return cover;
   }
 
-  // need to add a function that checks if mine surrounded completely by other mines
+  // solves the board using a completely random way of guessing mines when stuck
   public boolean solveRandomBoard(int[][] board, int[][] cover) {
     cover = pickRandom(board,cover);
 //    System.out.println("Board");
@@ -54,6 +54,8 @@ public class Solver {
     return false;
   }
 
+  // solves the board using an optimized random approach that searches for
+  // guesses with a higher percentage of success
   public boolean solveOptimizedBoard(int[][] board, int[][] cover) {
     cover = pickRandom(board,cover);
 //    System.out.println("Board");
@@ -82,6 +84,30 @@ public class Solver {
     return false;
   }
 
+  // iterates over the board, picking out spots where there are obviously mines
+  private int[][] iterateBoard(int[][] board, int[][] cover) {
+    iterationChange = false;
+    for(int i = 0; i < board.length; i++) {
+      for(int j = 0; j < board[i].length; j++) {
+        if(cover[i][j] > 0) {
+          cover = iterateTile(i, j, board, cover);
+        }
+        if(cover[i][j] == -1) {
+          return null;
+        }
+      }
+    }
+    if(iterationChange) {
+      changes = true;
+    } else {
+      changes = false;
+    }
+//    System.out.println("iterateBoard");
+//    board1.printBoard(cover);
+    return cover;
+  }
+
+  // iterates over the board to search where to make it's guess when stuck
   private int[][] iterateRandomBoard(int[][] board, int[][] cover) {
     iterationChange = false;
     for(int i = 0; i < board.length; i++) {
@@ -104,6 +130,7 @@ public class Solver {
     return cover;
   }
 
+  // iterates over the board, looking for the highest percentage possible guess when stuck
   private int[][] iterateOptimizedBoard(int[][] board, int[][] cover) {
     iterationChange = false;
     for(int k = 1; k <= 8; k++) {
@@ -128,32 +155,11 @@ public class Solver {
     return cover;
   }
 
-  // iterates over the board, picking out mines
-  // works!
-  private int[][] iterateBoard(int[][] board, int[][] cover) {
-    iterationChange = false;
-    for(int i = 0; i < board.length; i++) {
-      for(int j = 0; j < board[i].length; j++) {
-        if(cover[i][j] > 0) {
-          cover = iterateTile(i, j, board, cover);
-        }
-        if(cover[i][j] == -1) {
-          return null;
-        }
-      }
-    }
-    if(iterationChange) {
-      changes = true;
-    } else {
-      changes = false;
-    }
-//    System.out.println("iterateBoard");
-//    board1.printBoard(cover);
-    return cover;
-  }
 
-  // just for one tile. Will need a function that runs over all tiles until no obvious moves are left available
-  // works!
+
+  // iterates over a single tile
+  // if it needs to flag surrounding tiles, will do so
+  // if it needs to uncover surrounding tiles, will do so
   public int[][] iterateTile(int r, int c, int[][] board, int[][] cover) {
     ArrayList<Point> points = getAdjacent(r,c,cover);
     ArrayList<Point> unknownPoints = getUnknown(points);
@@ -162,18 +168,21 @@ public class Solver {
     int flagged = flaggedPoints.size();
     int value = board[r][c];
 
+    // if you need to flag all the unknown
     if((unknown==value&&flagged==0) || (flagged+unknown==value&&unknown!=0)) {
       iterationChange = true;
       for(int i = 0; i < unknown; i++) {
         Point unknownPoint = unknownPoints.get(i);
         cover[unknownPoint.getX()][unknownPoint.getY()] = -2;
       }
-    } else if(flagged==value&&unknown>0) {
+    }
+    // if you need to uncover all the unknown
+    else if(flagged==value&&unknown>0) {
       iterationChange = true;
       for(int i = 0; i < unknown; i++) {
         Point unknownPoint = unknownPoints.get(i);
         if(board[unknownPoint.getX()][unknownPoint.getY()]==0) {
-          cover = uncoverBoard(unknownPoint.getX(),unknownPoint.getY(),board,cover);
+          cover = uncoverBoardBFS(unknownPoint.getX(),unknownPoint.getY(),board,cover);
         } else {
           cover[unknownPoint.getX()][unknownPoint.getY()] = board[unknownPoint.getX()][unknownPoint.getY()];
         }
@@ -184,11 +193,10 @@ public class Solver {
     return cover;
   }
 
-  // works!
+  // will pick a random unknown around a tile to uncover
   public int[][] iterateRandomTile(int r, int c, int[][] board, int[][] cover) {
     ArrayList<Point> points = getAdjacent(r,c,cover);
     ArrayList<Point> unknownPoints = getUnknown(points);
-    ArrayList<Point> flaggedPoints = getFlagged(points);
 
     if(unknownPoints.size()!=0) {
       iterationChange = true;
@@ -197,7 +205,7 @@ public class Solver {
       if(board[randomUnknown.getX()][randomUnknown.getY()]!=0) {
         cover[randomUnknown.getX()][randomUnknown.getY()] = board[randomUnknown.getX()][randomUnknown.getY()];
       } else {
-        cover = uncoverBoard(randomUnknown.getX(),randomUnknown.getY(),board,cover);
+        cover = uncoverBoardBFS(randomUnknown.getX(),randomUnknown.getY(),board,cover);
       }
     }
 //    System.out.println("iterateRandomTile");
@@ -205,6 +213,8 @@ public class Solver {
     return cover;
   }
 
+  // if the number of unknown points is the right number specified by the value k,
+  // will uncover random unknown around tile
   public int[][] iterateOptimizedTile(int r, int c, int[][] board, int[][] cover, int k) {
     ArrayList<Point> points = getAdjacent(r,c,cover);
     ArrayList<Point> unknownPoints = getUnknown(points);
@@ -220,7 +230,7 @@ public class Solver {
       if(board[randomUnknown.getX()][randomUnknown.getY()]!=0) {
         cover[randomUnknown.getX()][randomUnknown.getY()] = board[randomUnknown.getX()][randomUnknown.getY()];
       } else {
-        cover = uncoverBoard(randomUnknown.getX(),randomUnknown.getY(),board,cover);
+        cover = uncoverBoardBFS(randomUnknown.getX(),randomUnknown.getY(),board,cover);
       }
     }
 //    System.out.println("iterateOptimizedBoard");
@@ -235,10 +245,12 @@ public class Solver {
   // * Otherwise, keep looping
 
   // picks a random spot empty spot in the board. Selected spot is the first move.
-  // works!
+  // first point must be a 0, so it can uncover a larger section of the board
+  // picks a random point, then finds nearest 0
   public int[][] pickRandom(int[][] board, int[][] cover) {
     int randX = (int)(Math.random()*board.length);
     int randY = (int)(Math.random()*board[0].length);
+    // searches one direction for a 0
     for(int i = randX; i<board.length; i++){
       for(int j = randY; j<board[0].length; j++){
         if(board[i][j]==0){
@@ -247,6 +259,7 @@ public class Solver {
         }
       }
     }
+    // if it doesn't find a 0, searches the other direction
     for(int i = randX; i>=0; i--){
       for(int j  = randY; j>=0; j--){
         if(board[i][j]==0){
@@ -259,10 +272,7 @@ public class Solver {
     return cover;
   }
 
-  // This should be replaced with a BFS
-  // uncovers the board at the random spot (r,c)
-  // works, but very inefficient
-  // brute force, recursive solution
+  // Brute force solution, no longer in use, left in for old times sake
   private int[][] uncoverBoard(int r,int c, int[][] board, int[][] cover) {
     cover[r][c] = board[r][c];
     int x = r - 1;
@@ -280,7 +290,7 @@ public class Solver {
         } else if(board[x+i][y+j] == 0){
           if(cover[x+i][y+j] != 0) {
             cover[x+i][y+j] = 0;
-            uncoveredBoard = uncoverBoard(x+i,y+j,board, uncoveredBoard);
+            uncoveredBoard = uncoverBoardBFS(x+i,y+j,board, uncoveredBoard);
           }
         } else if(board[x+i][y+j] != -1) {
           uncoveredBoard[x+i][y+j] = board[x+i][y+j];
@@ -290,8 +300,7 @@ public class Solver {
     return uncoveredBoard;
   }
 
-  // BFS
-  // works!
+  // BFS implementation of function that uncovers all necessary mines around randomly selected spot
   private int[][] uncoverBoardBFS(int r, int c, int[][] board, int[][] cover) {
     Queue<Point> points = new LinkedList<>();
 
@@ -323,7 +332,7 @@ public class Solver {
     return cover;
   }
 
-  // works
+  // returns ArrayList of all adjacent points to a tile
   private ArrayList<Point> getAdjacent(int r, int c, int[][] cover) {
     int x = r - 1;
     int y = c - 1;
@@ -344,7 +353,7 @@ public class Solver {
     return points;
   }
 
-  // works
+  // returns all flagged points within an ArrayList
   private ArrayList<Point> getFlagged(ArrayList<Point> points) {
     ArrayList<Point> flagged = new ArrayList<>();
     for(int i = 0; i < points.size(); i++) {
@@ -356,7 +365,7 @@ public class Solver {
     return flagged;
   }
 
-  // works
+  // returns all unknown points within an ArrayList
   private ArrayList<Point> getUnknown(ArrayList<Point> points) {
     ArrayList<Point> unknown = new ArrayList<>();
     for(int i = 0; i < points.size(); i++) {
@@ -368,8 +377,7 @@ public class Solver {
     return unknown;
   }
 
-  // works!
-  // maybe add check for mine covered by other mines here?
+  // checks if the board has been finished
   private boolean checkFinish(int[][] cover) {
     int numMines = board1.getNumMines();
     int count = 0;
@@ -390,6 +398,7 @@ public class Solver {
     return false;
   }
 
+  // checks if there is a mine completely covered by other mines
   private boolean checkForCoveredMine(int[][] cover) {
     for(int i = 0; i < cover.length; i++) {
       for(int j = 0; j < cover[i].length; j++) {
@@ -405,6 +414,7 @@ public class Solver {
     return false;
   }
 
+  // part of uncoverBoardBFS, checks if a point's x and y coordinate are in the ArrayList
   private boolean checkVisited(Point point, ArrayList<Point> points) {
     for(int i = 0; i < points.size(); i++) {
       Point j = points.get(i);

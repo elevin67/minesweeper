@@ -2,6 +2,8 @@ package minesweeper;
 
 import java.util.*;
 
+
+// this class is used to keep track of a points coordinates and value
 public class Point {
   int x;
   int y;
