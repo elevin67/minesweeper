@@ -390,7 +390,8 @@ public class Solver {
     }
     if(count==numMines) {
       return true;
-    } else if(count==numMines-1) {
+    }
+    else if(count==numMines-1) {
       if(checkForCoveredMine(cover)) {
         return true;
       }
@@ -404,7 +405,7 @@ public class Solver {
       for(int j = 0; j < cover[i].length; j++) {
         if(cover[i][j]==-3) {
           ArrayList<Point> adjacentPoints = getAdjacent(i,j,cover);
-          if(getFlagged(adjacentPoints).size()==adjacentPoints.size()) {
+          if(getFlagged(adjacentPoints).size()+getUnknown(adjacentPoints).size()==adjacentPoints.size()) {
             cover[i][j] = -2;
             return true;
           }

@@ -66,7 +66,7 @@ public class Board {
     for(int i = 0; i < numMines/2; i++) {
       int x = (int)((Math.random()*width));
       int y = (int)((Math.random()*height));
-      if((board[x][y]==-1)||(checkMine(x,y,board)>0)) {
+      if((board[x][y]==-1)||(checkMine(x,y,board)>1)) {
         i--;
         continue;
       } else {

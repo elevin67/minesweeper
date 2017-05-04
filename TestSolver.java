@@ -31,7 +31,7 @@ public class TestSolver {
     int won = 0;
     int lost = 0;
     long start = System.currentTimeMillis();
-    for(int i = 0; i < 1000; i++) {
+    for(int i = 0; i < 100000; i++) {
       Board board = new Board(height,width,numMines);
       boolean run = runOne(board,rand);
       if(run){won++;}
@@ -39,7 +39,7 @@ public class TestSolver {
     }
     long end = System.currentTimeMillis();
     long time = (end-start);
-    float avgTime = (float)(time/1000.0);
+    float avgTime = (float)(time/100000.0);
     System.out.println("Time: "+time);
     System.out.println("Average time to complete: "+avgTime+" ms");
     System.out.println("Won: "+won+" Lost: "+lost);
