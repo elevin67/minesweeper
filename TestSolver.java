@@ -1,14 +1,12 @@
 package minesweeper;
 
-import java.util.Timer;
-
-
 public class TestSolver {
 
   public TestSolver() {
 
   }
 
+  // runs one specified solver over a random board
   public boolean runOne(Board board, int rand) {
     Solver solver = new Solver(board);
     Boolean result = false;
@@ -24,9 +22,7 @@ public class TestSolver {
     }
   }
 
-  // Beginner: 8x8 10 mines
-  // Intermediate: 16x16 40 mines
-  // Expert: 24x24 99 mines
+  // tests multiple boards
   public void testBoard(int rand, int height, int width, int numMines) {
     int won = 0;
     int lost = 0;
@@ -45,6 +41,7 @@ public class TestSolver {
     System.out.println("Won: "+won+" Lost: "+lost);
   }
 
+  // runs the full test
   public void runTest() {
     printOutLine();
     System.out.println("10% of board is mines");

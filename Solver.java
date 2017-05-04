@@ -6,10 +6,14 @@ import java.util.ArrayList;
 public class Solver {
   Board board1;
   int[][] gameBoard;
+  // the board that is visible to the user
   int[][] cover;
+  // tracks if a function changes a board
   boolean changes = false;
+  // tracks if there were any changes on the cover that iteration
   boolean iterationChange = false;
-  // boolean finished = false;
+  // tracks if a random selector was unable to find any changes
+  boolean failed = false;
 
   public Solver(Board b) {
     board1 = b;
@@ -29,17 +33,17 @@ public class Solver {
   // solves the board using a completely random way of guessing mines when stuck
   public boolean solveRandomBoard(int[][] board, int[][] cover) {
     cover = pickRandom(board,cover);
-//    System.out.println("Board");
-//    board1.printBoard(board);
-//    board1.printBoard(cover);
     if(cover==null) {
       return false;
     }
     cover = iterateBoard(board,cover);
     while(cover!=null) {
+      // if iterateBoard doesn't make any changes
       if(!changes) {
         cover = iterateRandomBoard(board,cover);
-      } else {
+      }
+      // check the board for logical moves
+      else {
         cover = iterateBoard(board,cover);
       }
       if(cover==null) {
@@ -47,7 +51,7 @@ public class Solver {
       }
 
 
-      if(checkFinish(cover)) {
+      if(checkFinish(cover, board)) {
         return true;
       }
     }
@@ -58,17 +62,17 @@ public class Solver {
   // guesses with a higher percentage of success
   public boolean solveOptimizedBoard(int[][] board, int[][] cover) {
     cover = pickRandom(board,cover);
-//    System.out.println("Board");
-//    board1.printBoard(board);
-//    board1.printBoard(cover);
     if(cover==null) {
       return false;
     }
     cover = iterateBoard(board,cover);
+    // if iterateBoard doesn't make any changes
     while(cover!=null) {
       if(!changes) {
         cover = iterateOptimizedBoard(board,cover);
-      } else {
+      }
+      // check the board for logical moves
+      else {
         cover = iterateBoard(board,cover);
       }
       if(cover==null) {
@@ -76,7 +80,7 @@ public class Solver {
       }
 
 
-      if(checkFinish(cover)) {
+      if(checkFinish(cover, board)) {
         return true;
       }
 
@@ -102,22 +106,19 @@ public class Solver {
     } else {
       changes = false;
     }
-//    System.out.println("iterateBoard");
-//    board1.printBoard(cover);
     return cover;
   }
 
   // iterates over the board to search where to make it's guess when stuck
   private int[][] iterateRandomBoard(int[][] board, int[][] cover) {
     iterationChange = false;
+    failed = false;
     for(int i = 0; i < board.length; i++) {
       for (int j = 0; j < board[i].length; j++) {
         if (cover[i][j] > 0) {
           cover = iterateRandomTile(i, j, board, cover);
           if (iterationChange) {
             changes = true;
-//            System.out.println("iterateRandomBoard");
-//            board1.printBoard(cover);
             return cover;
           } else {
             changes = false;
@@ -127,12 +128,15 @@ public class Solver {
         }
       }
     }
+    // was unable to find any tiles to uncover
+    failed = true;
     return cover;
   }
 
   // iterates over the board, looking for the highest percentage possible guess when stuck
   private int[][] iterateOptimizedBoard(int[][] board, int[][] cover) {
     iterationChange = false;
+    failed = false;
     for(int k = 1; k <= 8; k++) {
       for(int i = 0; i < board.length; i++) {
         for(int j = 0; j < board[i].length; j++) {
@@ -140,8 +144,6 @@ public class Solver {
             cover = iterateOptimizedTile(i,j,board,cover,k);
             if (iterationChange) {
               changes = true;
-//              System.out.println("iterateOptimizedBoard");
-//              board1.printBoard(cover);
               return cover;
             } else {
               changes = false;
@@ -152,6 +154,8 @@ public class Solver {
         }
       }
     }
+    // was unable to find any tiles to uncover
+    failed = true;
     return cover;
   }
 
@@ -188,8 +192,6 @@ public class Solver {
         }
       }
     }
-//    System.out.println("iterateTile");
-//    board1.printBoard(cover);
     return cover;
   }
 
@@ -208,8 +210,6 @@ public class Solver {
         cover = uncoverBoardBFS(randomUnknown.getX(),randomUnknown.getY(),board,cover);
       }
     }
-//    System.out.println("iterateRandomTile");
-//    board1.printBoard(cover);
     return cover;
   }
 
@@ -233,8 +233,6 @@ public class Solver {
         cover = uncoverBoardBFS(randomUnknown.getX(),randomUnknown.getY(),board,cover);
       }
     }
-//    System.out.println("iterateOptimizedBoard");
-//    board1.printBoard(cover);
     return cover;
   }
 
@@ -300,7 +298,7 @@ public class Solver {
     return uncoveredBoard;
   }
 
-  // BFS implementation of function that uncovers all necessary mines around randomly selected spot
+  // BFS implementation of function that uncovers all necessary mines around a 0 tile
   private int[][] uncoverBoardBFS(int r, int c, int[][] board, int[][] cover) {
     Queue<Point> points = new LinkedList<>();
 
@@ -316,7 +314,6 @@ public class Solver {
       ArrayList<Point> adjacent = getAdjacent(point.getX(),point.getY(),cover);
       for(int i = 0; i < adjacent.size(); i++) {
         Point adjacentPoint = adjacent.get(i);
-        // not finding point in visited
         if(checkVisited(adjacentPoint,visited)) {
           continue;
         } else if(board[adjacentPoint.getX()][adjacentPoint.getY()] > 0) {
@@ -378,7 +375,7 @@ public class Solver {
   }
 
   // checks if the board has been finished
-  private boolean checkFinish(int[][] cover) {
+  private boolean checkFinish(int[][] cover, int[][] board) {
     int numMines = board1.getNumMines();
     int count = 0;
     for(int i = 0; i < cover.length; i++) {
@@ -391,9 +388,13 @@ public class Solver {
     if(count==numMines) {
       return true;
     }
-    else if(count==numMines-1) {
+    // if a random iteration was unable to find any tiles to uncover
+    else if(failed) {
       if(checkForCoveredMine(cover)) {
         return true;
+      }
+      else if(checkForWall(cover)) {
+        pickRandom(board, cover);
       }
     }
     return false;
@@ -413,6 +414,23 @@ public class Solver {
       }
     }
     return false;
+  }
+
+  // checks if all the unknown tiles are walled off by all mines
+  // if that is the case unable to reach unknown tiles
+  private boolean checkForWall(int[][] cover) {
+    for(int i = 0; i < cover.length; i++) {
+      for(int j = 0; j < cover[i].length; j++) {
+        if(cover[i][j] > 0) {
+          ArrayList<Point> adjacentPoints = getAdjacent(i,j,cover);
+          if(getUnknown(adjacentPoints).size() > 0) {
+            return false;
+          }
+        }
+      }
+    }
+
+    return true;
   }
 
   // part of uncoverBoardBFS, checks if a point's x and y coordinate are in the ArrayList
